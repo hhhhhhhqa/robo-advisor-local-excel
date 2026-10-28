@@ -1,17 +1,17 @@
-本地 Excel 投资组合工具
+本地 Excel 投资组合工具 1.1 测试版
 
-先完整解压这个 ZIP。Windows 使用 .cmd 文件，Mac 使用 .command 文件。
+完整解压 ZIP。Windows 使用 .cmd，Mac 使用 .command。
 
-第一次使用：双击 1_Setup，等待“初始化完成”。程序会联网下载本地 Python 环境，不需要自己安装。然后打开新生成的 Portfolio.xlsx，填写初始资金及交易。
+第一次：双击 1_Setup，等待初始化完成。它只安装本地运行环境，不下载行情。然后打开 Portfolio.xlsm，允许这个文件运行宏，由你自己点击表内 Update 获取初始价格和汇率。
 
-日常使用：修改 Portfolio.xlsx，保存并关闭 Excel；双击 2_Update；等待“更新完成”后重新打开 Excel。第一次更新需要下载历史行情和汇率，可能需要几分钟。
+日常：你填写或修改交易，程序自动按本地已有数据计算持仓、现金和资产走势图，不请求行情 API。想获取新数据时，由你自己决定何时点击 Update。没有定时或打开文件时的自动下载。
 
-每个人下载一份、独立使用，交易和结果互不影响。要发给别人，请发原始 ZIP，不要发带有你个人交易的工作文件夹。
+状态区出现 RESULTS NOT CURRENT 时，原有结果尚未反映本次输入，请修正输入或自行点击 Update 补充行情。数据只覆盖已下载日期，不能把旧缓存当作最新行情。
 
-行情更新开关在 Dashboard 的 E5 和 E6：Yes 下载最新数据，No 使用本机已经下载的数据。第一次没有缓存时会先下载初始数据。
+按钮备用：保存并关闭 Excel 后，双击 2_Update 会联网获取行情并计算；3_Recalculate 只按缓存计算，不请求行情 API。自动计算不需要每天重复 Setup。
 
-每次成功更新前，原 Excel 会备份到 local_data/backups，保留最近 5 份。更新失败时请查看窗口提示，修正后重试；详细日志在 local_data/last_update.log。
+每人下载原始包、各自 Setup，各自独立使用。请分发整个原始 ZIP。只有一个 Excel 文件无法调用配套的 Python 程序。移动工具文件夹后需要重新 Setup。
 
-Mac 提示没有执行权限时，打开终端，输入 chmod +x 和一个空格，把两个 .command 文件拖入窗口后按回车，再双击运行。若系统限制打开，请按系统提示允许来自本下载来源的文件。
+测试状态：后台计算及数据隔离有自动测试，新宏已在 Mac Excel 中运行并创建按钮。Excel 内完整自动计算与结果导回流程、Windows 原生 Excel 界面仍需验证。外部入口可作为备用。
 
-需要桌面 Microsoft Excel。第一次初始化和行情刷新需要网络。移动整个文件夹后，请重新运行 1_Setup。详细操作、字段位置和计算说明见 README.md。
+详细填写方法、升级和恢复说明见 README.md。备份在 local_data/backups，日志在 local_data/last_update.log。

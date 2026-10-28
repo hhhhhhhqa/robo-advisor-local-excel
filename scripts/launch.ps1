@@ -1,4 +1,7 @@
-param([ValidateSet('setup', 'update')][string]$Action = 'update')
+param(
+    [ValidateSet('setup', 'update', 'recalculate', 'excel-button', 'excel-update', 'excel-recalculate')][string]$Action = 'update',
+    [string]$Snapshot = '', [string]$Result = ''
+)
 $ErrorActionPreference = 'Stop'
 $AppRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $AppRoot
@@ -11,6 +14,15 @@ $env:PYTHONIOENCODING = 'utf-8'
 $UvApp = Join-Path $AppRoot '.tools\uv.exe'
 $PythonApp = Join-Path $AppRoot '.venv\Scripts\python.exe'
 try {
+    if ($Action -ne 'setup') {
+        if (-not (Test-Path -LiteralPath $PythonApp)) {
+            throw 'Run 1_Setup once before using this workbook. No automatic installation was attempted.'
+        }
+        $RunnerArguments = @((Join-Path $AppRoot 'local_runner.py'), $Action)
+        if ($Snapshot -ne '' -and $Result -ne '') { $RunnerArguments += @('--snapshot', $Snapshot, '--result', $Result) }
+        & $PythonApp @RunnerArguments
+        exit $LASTEXITCODE
+    }
     if (-not (Test-Path -LiteralPath $UvApp)) {
         New-Item -ItemType Directory -Force -Path (Join-Path $AppRoot '.tools') | Out-Null
         Write-Host 'Preparing the local Python installer (internet required)...'

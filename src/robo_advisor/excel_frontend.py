@@ -86,7 +86,7 @@ def _yes_no(value: object, location: str) -> bool:
     return choice == "yes"
 
 
-def read_inputs(path: Path, assets: dict) -> Inputs:
+def read_inputs(path: Path, assets: dict, *, read_refresh_flags: bool = True) -> Inputs:
     book = load_workbook(path, read_only=True, data_only=True)
     if "Dashboard" not in book:
         raise ValueError("Expected one Dashboard sheet; use robo_advisor_dashboard.xlsx")
@@ -104,8 +104,8 @@ def read_inputs(path: Path, assets: dict) -> Inputs:
     risk_free = float(_positive_amount(settings["E4"].value or 0, "Dashboard!E4", allow_zero=True))
     if risk_free >= 1:
         raise ValueError("Dashboard!E4 risk-free rate must be a decimal below 1, e.g. 0.04")
-    refresh_prices = _yes_no(settings["E5"].value, "Dashboard!E5")
-    refresh_fx = _yes_no(settings["E6"].value, "Dashboard!E6")
+    refresh_prices = _yes_no(settings["E5"].value, "Dashboard!E5") if read_refresh_flags else False
+    refresh_fx = _yes_no(settings["E6"].value, "Dashboard!E6") if read_refresh_flags else False
 
     trades = []
     sheet = book["Dashboard"]
@@ -230,7 +230,7 @@ def _header(sheet, row: int, labels: list[str]) -> None:
 
 def write_results(input_path: Path, inputs: Inputs, market: MarketData,
                   ledger: list[dict], history: list[dict], cash: dict[str, Decimal],
-                  holdings: dict[str, int], assets: dict) -> None:
+                  holdings: dict[str, int], assets: dict, *, local_mode: bool = False) -> None:
     book = load_workbook(input_path)
     sheet = book["Dashboard"]
     sheet.sheet_view.showGridLines = False
@@ -382,6 +382,23 @@ def write_results(input_path: Path, inputs: Inputs, market: MarketData,
             sheet.cell(row, col).number_format = "0.0%" if col in (5, 7, 8) else "#,##0.00"
         sheet.cell(row, 9, f"=IF(ROW()-439=$F$8,$B{row},NA())")
     sheet.freeze_panes = "A26"
+    if local_mode:
+        for address, text in {
+            "D5": "Market data", "E5": "Manual Update", "D6": "Calculations", "E6": "Automatic (local)",
+            "A15": "Trade edits calculate automatically using local data.",
+            "H5": "Click Update to download prices and FX rates.",
+        }.items():
+            sheet[address] = text
+        for address in ("E5", "E6"):
+            sheet[address].fill = PatternFill(fill_type=None)
+            sheet[address].font = Font(name="Arial", size=10, color="17324D")
+        for validation in list(sheet.data_validations.dataValidation):
+            if str(validation.sqref) in ("E5:E6", "E5", "E6"):
+                sheet.data_validations.dataValidation.remove(validation)
+        sheet.merge_cells("H6:M7")
+        sheet["H6"] = "Calculated from local market data. Click Update for new prices / FX."
+        sheet["H6"].alignment = Alignment(wrap_text=True, vertical="center")
+        sheet["H6"].font = Font(name="Arial", size=10, color="17324D")
     book.calculation = CalcProperties(calcMode="auto", fullCalcOnLoad=True, forceFullCalc=True)
     temp_path = input_path.with_name(input_path.stem + ".tmp.xlsx")
     book.save(temp_path)

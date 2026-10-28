@@ -5,4 +5,5 @@
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
 *.xlsx binary
+*.xlsm binary
 *.lock text eol=lf
