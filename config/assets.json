@@ -1,0 +1,27 @@
+{
+  "requested_start_date": "2005-01-01",
+  "market_timezone": "America/New_York",
+  "currency": "USD",
+  "factor_availability_lag_months": 1,
+  "assets": {
+    "SPY": {"name": "US Large Cap", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "IWM": {"name": "US Small Cap", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "IWD": {"name": "US Value", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "IWF": {"name": "US Growth", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "VGK": {"name": "Europe Equity", "asset_class": "equity", "region": "Europe", "factor_model": "Europe_FF3"},
+    "EWJ": {"name": "Japan Equity", "asset_class": "equity", "region": "Japan", "factor_model": "Japan_FF3"},
+    "EEM": {"name": "Emerging Markets Equity", "asset_class": "equity", "region": "Emerging", "factor_model": "Emerging_FF3"},
+    "AGG": {"name": "US Aggregate Bond", "asset_class": "bond", "region": "US", "factor_model": null},
+    "GLD": {"name": "Gold", "asset_class": "commodity", "region": "Global", "factor_model": null},
+    "XLK": {"name": "US Technology", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "XLC": {"name": "US Communication Services", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "XLY": {"name": "US Consumer Discretionary", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "XLP": {"name": "US Consumer Staples", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "XLE": {"name": "US Energy", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "XLF": {"name": "US Financials", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "XLV": {"name": "US Health Care", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "XLI": {"name": "US Industrials", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "XLB": {"name": "US Materials", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"},
+    "XLU": {"name": "US Utilities", "asset_class": "equity", "region": "US", "factor_model": "US_FF3"}
+  }
+}

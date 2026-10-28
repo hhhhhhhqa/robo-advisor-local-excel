@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robo-advisor-local-excel"
+version = "1.0.0"
+description = "Local Excel ETF trading dashboard with double-click setup and updates"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "pandas>=2.2,<4",
+  "numpy>=2.0,<3",
+  "pyarrow>=17,<24",
+  "openpyxl>=3.1,<4",
+  "yfinance>=0.2.54,<2",
+  "requests>=2.32,<3",
+  "tzdata>=2025.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
