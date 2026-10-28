@@ -71,10 +71,10 @@ def prepare_button_workbook(root: Path) -> Path:
             staged.parent.mkdir(exist_ok=True)
             attach_project(legacy, staged, root)
             staged.replace(target)
-            print("已将旧 Excel 的资金和交易复制到 Portfolio.xlsm；原 Portfolio.xlsx 已保留。")
+            print("Copied the legacy workbook inputs to Portfolio.xlsm. The original Portfolio.xlsx has been kept.")
         else:
             shutil.copy2(template_path(root), target)
-            print("已创建带更新按钮的 Portfolio.xlsm（初始现金 10,000 USD）。")
+            print("Created Portfolio.xlsm with an Update button and USD 10,000 starting cash.")
     return target
 
 

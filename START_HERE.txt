@@ -1,17 +1,36 @@
-本地 Excel 投资组合工具 1.1 beta.2 测试版
+Local Excel Portfolio Tracker — v1.1.0-beta.3
 
-完整解压 ZIP。Windows 使用 .cmd，Mac 使用 .command。
+1. Extract the COMPLETE ZIP into a local folder you intend to keep.
+2. Mac: double-click 1_Setup.command. Windows: double-click 1_Setup.cmd.
+   Wait for "Setup completed". Setup installs software, not market data.
+3. Open the generated Portfolio.xlsm in the main folder. Enable macros
+   for this trusted workbook. Do not open a template in examples/excel.
+4. Set Initial cash in the yellow cells B19:B23.
+5. Click Update yourself to download initial prices and FX rates.
+6. Enter trades in A27:F226, oldest first. Finish the row and wait about
+   two seconds. Cash, holdings and charts calculate from local data.
+   Save the workbook as usual.
 
-第一次：双击 1_Setup，等待初始化完成。它只安装本地运行环境，不下载行情。然后打开 Portfolio.xlsm，允许这个文件运行宏，由你自己点击表内 Update 获取初始价格和汇率。
+CURRENT CASH at the top, B4:B8, automatically reflects Buy, Sell and
+Exchange. Do not overwrite these formulas. INITIAL CASH is B19:B23.
 
-日常：你填写或修改交易，程序自动按本地已有数据计算持仓、现金和资产走势图，不请求行情 API。想获取新数据时，由你自己决定何时点击 Update。没有定时或打开文件时的自动下载。
+Only YOU choose when to click Update for new market data. Opening Excel,
+editing trades and automatic calculation do not request prices or FX.
+There is no scheduled market download.
 
-状态区出现 RESULTS NOT CURRENT 时，原有结果尚未反映本次输入，请修正输入或自行点击 Update 补充行情。数据只覆盖已下载日期，不能把旧缓存当作最新行情。
+If RESULTS NOT CURRENT appears, read the reason in the status area.
+Complete the row, correct its inputs, or choose Update if data is missing.
+Previous results stay visible until a successful calculation.
 
-按钮备用：保存并关闭 Excel 后，双击 2_Update 会联网获取行情并计算；3_Recalculate 只按缓存计算，不请求行情 API。自动计算不需要每天重复 Setup。
+Fallback: save and close Excel. Run 2_Update to download and calculate,
+or 3_Recalculate to calculate using only cached data.
 
-每人下载原始包、各自 Setup，各自独立使用。请分发整个原始 ZIP。只有一个 Excel 文件无法调用配套的 Python 程序。移动工具文件夹后需要重新 Setup。
+Keep the whole folder: a lone Excel file cannot run the Python functions.
+Share the original ZIP; each person runs Setup and works independently.
+After moving the folder, rerun Setup.
 
-测试状态：Mac Excel 已实测自动重算、手动行情更新、重复导回、错误保护与恢复、历史日期及图中标记；Windows 原生 Excel 界面未实测。后台有 36 项自动测试。具体范围见 VALIDATION.md。请使用新包中的新工作簿，旧 beta.1 工作簿不会由 Setup 自动替换宏。
-
-详细填写方法、升级和恢复说明见 README.md。备份在 local_data/backups，日志在 local_data/last_update.log。
+Instructions: README.md and docs/TUTORIAL.md.
+File reference: docs/FILES.md.
+Backups: local_data/backups. Log: local_data/last_update.log.
+Native Mac Excel tested. Windows native Excel UI has not been tested;
+automated setup and Python checks cover both operating systems.

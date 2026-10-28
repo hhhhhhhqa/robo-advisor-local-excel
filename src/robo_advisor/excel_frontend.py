@@ -92,14 +92,18 @@ def read_inputs(path: Path, assets: dict, *, read_refresh_flags: bool = True) ->
         raise ValueError("Expected one Dashboard sheet; use robo_advisor_dashboard.xlsx")
     settings = book["Dashboard"]
     cash = {}
-    for row, currency in enumerate(FX_CURRENCIES, 4):
-        amount = _positive_amount(settings.cell(row, 2).value or 0, f"Settings!B{row}", allow_zero=True)
+    # The local dashboard shows current balances at the top. Read only the
+    # separate starting amounts so repeated calculations never replay trades
+    # against an already adjusted balance. Older workbooks remain readable.
+    first_cash_row = 19 if settings["A3"].value == "Current cash" else 4
+    for row, currency in enumerate(FX_CURRENCIES, first_cash_row):
+        amount = _positive_amount(settings.cell(row, 2).value or 0, f"Dashboard!B{row}", allow_zero=True)
         rounded = _money(amount, currency)
         if amount != rounded:
-            raise ValueError(f"Settings!B{row}: {currency} cash has too many decimal places")
+            raise ValueError(f"Dashboard!B{row}: {currency} cash has too many decimal places")
         cash[currency] = rounded
     if not any(cash.values()):
-        raise ValueError("Enter a positive starting cash balance in Settings!B4:B8")
+        raise ValueError(f"Enter a positive starting cash balance in Dashboard!B{first_cash_row}:B{first_cash_row+4}")
     as_of = _date(settings["E3"].value, "Dashboard!E3") if settings["E3"].value else None
     risk_free = float(_positive_amount(settings["E4"].value or 0, "Dashboard!E4", allow_zero=True))
     if risk_free >= 1:
@@ -393,6 +397,31 @@ def write_results(input_path: Path, inputs: Inputs, market: MarketData,
         sheet.cell(row, 9, f"=IF(ROW()-439=$F$8,$B{row},NA())")
     sheet.freeze_panes = "A26"
     if local_mode:
+        # Preserve editable inputs before replacing their old display with links
+        # to the existing per-currency cash results.
+        sheet["A3"] = "Current cash"
+        sheet["B3"] = "Balance"
+        sheet["A18"] = "Initial cash"
+        sheet["B18"] = "Amount (edit)"
+        for address in ("A18", "B18"):
+            sheet[address].fill = PatternFill("solid", fgColor="17324D")
+            sheet[address].font = Font(name="Arial", size=10, bold=True, color="FFFFFF")
+        for offset, currency in enumerate(FX_CURRENCIES):
+            sheet.cell(19 + offset, 1, currency)
+            sheet.cell(19 + offset, 2, float(inputs.cash[currency]))
+            sheet.cell(19 + offset, 2).fill = PatternFill("solid", fgColor="FFF2CC")
+            sheet.cell(19 + offset, 2).font = Font(name="Arial", size=10, color="000000")
+            sheet.cell(4 + offset, 2, f"=I{50 + offset}")
+            sheet.cell(4 + offset, 2).fill = PatternFill("solid", fgColor="EAF1F8")
+            sheet.cell(4 + offset, 2).font = Font(name="Arial", size=10, color="17324D")
+            for row in (4 + offset, 19 + offset):
+                sheet.cell(row, 2).number_format = "#,##0" if currency == "JPY" else "#,##0.00"
+        for validation in sheet.data_validations.dataValidation:
+            if str(validation.sqref) == "B4:B8":
+                validation.sqref = "B19:B23"
+        sheet["A9"] = "Balances update after each trade."
+        sheet["A9"].font = Font(name="Arial", size=10, color="17324D")
+        sheet.row_dimensions[18].height = 22
         for address, text in {
             "D5": "Market data", "E5": "Manual Update", "D6": "Calculations", "E6": "Automatic (local)",
             "A15": "Trade edits calculate automatically using local data.",

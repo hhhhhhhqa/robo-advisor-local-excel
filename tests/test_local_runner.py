@@ -53,7 +53,7 @@ def no_unexpected_network(monkeypatch):
 
 
 def test_two_downloads_are_independent_and_retain_original_workflow(tmp_path):
-    left, right = tmp_path / "Alice's folder 空格", tmp_path / "Bob"
+    left, right = tmp_path / "Alice's folder café", tmp_path / "Bob"
     left_book = local_folder(left)
     right_book = local_folder(right, starting_cash=2000)
     right_before = right_book.read_bytes()
@@ -81,6 +81,28 @@ def test_reinitialization_never_resets_personal_trades(tmp_path):
     before = workbook.read_bytes()
     assert runner.prepare(workbook.parent) == workbook
     assert workbook.read_bytes() == before
+
+
+def test_current_cash_display_does_not_become_starting_cash_on_recalculation(tmp_path):
+    workbook = local_folder(tmp_path / "person")
+    for _ in range(2):
+        runner.update(workbook.parent, refresh=False)
+        sheet = load_workbook(workbook)["Dashboard"]
+        assert sheet["A3"].value == "Current cash"
+        assert sheet["B4"].value == "=I50"
+        assert sheet["B5"].value == "=I51"
+        assert sheet["B19"].value == 1000
+        assert sheet["B20"].value == 0
+        assert sheet["I50"].value == 890
+        assert sheet["I51"].value == 0
+        assert sheet["B443"].value == 1010
+    book = load_workbook(workbook)
+    book["Dashboard"]["B19"] = 2000
+    book.save(workbook)
+    runner.update(workbook.parent, refresh=False)
+    sheet = load_workbook(workbook)["Dashboard"]
+    assert sheet["I50"].value == 1890
+    assert sheet["B443"].value == 2010
 
 
 def test_invalid_trade_leaves_workbook_unchanged(tmp_path):
@@ -112,7 +134,7 @@ def test_open_excel_is_rejected_before_any_download(tmp_path):
     workbook = local_folder(tmp_path / "person")
     workbook.with_name("~$Portfolio.xlsx").touch()
     before = workbook.read_bytes()
-    with pytest.raises(runner.LocalError, match="关闭"):
+    with pytest.raises(runner.LocalError, match="Save and close"):
         runner.update(workbook.parent, refresh=False)
     assert workbook.read_bytes() == before
 
@@ -127,14 +149,14 @@ def test_concurrent_edit_is_not_overwritten(tmp_path, monkeypatch):
         book["Dashboard"]["B4"] = 9000
         book.save(workbook)
     monkeypatch.setattr(frontend, "write_results", edit_during_calculation)
-    with pytest.raises(runner.LocalError, match="发生变化"):
+    with pytest.raises(runner.LocalError, match="changed during calculation"):
         runner.update(workbook.parent, refresh=False)
     assert load_workbook(workbook)["Dashboard"]["B4"].value == 9000
 
 
 def test_lock_rejects_second_update_and_releases_after_error(tmp_path):
     with runner.folder_lock(tmp_path):
-        with pytest.raises(runner.LocalError, match="正在更新"):
+        with pytest.raises(runner.LocalError, match="already updating"):
             with runner.folder_lock(tmp_path):
                 pytest.fail("second update was allowed")
     with runner.folder_lock(tmp_path):

@@ -1,70 +1,119 @@
-# 本地 Excel 投资组合工具
+# Local Excel Portfolio Tracker
 
-每个人下载一份，Setup 一次，在自己的桌面 Excel 中记录交易。交易改变后自动使用本地缓存计算持仓、现金、净值、收益和回撤，并生成资产走势图。**只有用户自己点击 Update（或主动运行外部 2_Update）时，才请求资产价格和汇率。** 打开 Excel、编辑交易和自动计算都不会请求行情 API。
+An Excel portfolio dashboard that runs on your own computer. Download a copy, run Setup once, and record ETF trades and currency exchanges in desktop Microsoft Excel. Each person's workbook, data and calculations are independent.
 
-当前为 **1.1 beta.2**。已在 Mac 原生 Excel 中实测自动重算、真实行情更新、重复导回、错误提示与恢复、历史日期及图中标记，修复了 beta.1 的临时文件外部链接问题。36 项自动测试覆盖缓存计算、数据隔离、宏源码一致性和失败保护。Windows 原生 Excel 界面仍未实测。测试方法和具体结果见 [VALIDATION.md](VALIDATION.md)。
+**Trade edits calculate automatically from local data. Only you decide when to download new asset prices and FX rates by clicking Update.** There are no scheduled market downloads or market requests on workbook open.
 
-## 首次使用
+**Current version: v1.1.0-beta.3.** Current cash balances are now at the top: Buy reduces cash, Sell adds cash, and Exchange reduces one currency and increases the other. Initial cash has its own editable section. Application messages and documentation are in English.
 
-下载 [1.1 测试包](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/tag/v1.1.0-beta.2)，把 ZIP **完整解压**到自己的本地文件夹。Windows 双击 `1_Setup.cmd`；Mac 双击 `1_Setup.command`。Setup 会在项目文件夹下载 Python 和依赖，并生成 `Portfolio.xlsm`；Mac 还会安装 Excel 调用本地程序所需的桥接文件。无需自行安装 Python。**Setup 不下载行情。**
+[Download the complete ZIP](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/download/v1.1.0-beta.3/robo-advisor-local-excel-v1.1.0-beta.3.zip) · [Release notes](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/tag/v1.1.0-beta.3) · [Worked tutorial](docs/TUTORIAL.md) · [Every file explained](docs/FILES.md)
 
-打开 `Portfolio.xlsm`，允许这个文件运行宏。首次使用由用户手动点击表内 **Update**，获取初始行情和汇率。首次下载历史数据可能需要几分钟。以后是否、何时获取新行情，都由用户自己点击 Update 决定。
+## Requirements
 
-支持 Windows 和 Mac 桌面 Microsoft Excel。需要保留整个工具文件夹；仅发送 Excel 文件不足以运行 Python 功能。发给别人时请发原始 ZIP，让对方自行 Setup，不要发送包含自己交易、缓存和运行环境的工作文件夹。
+- Desktop Microsoft Excel for Windows or Mac, with macros enabled for this workbook. Excel for the web, mobile Excel, Google Sheets and Apple Numbers do not run this integration.
+- Internet for the first Setup and whenever **you** choose Update. Once data is cached, entering trades and calculating results can work offline.
+- A writable local folder containing the **entire extracted package**. No GitHub account, Git installation or separately installed Python is required for ordinary use.
 
-## 日常使用
+Native Excel behavior has been tested on Mac. Windows setup and Python workflows are covered by automated CI; Windows native Excel UI behavior has not been tested. See [validation details](VALIDATION.md).
 
-在交易输入区填写或修改记录。停止编辑约两秒后，程序自动读取本地缓存重新计算，生成成交记录、逐日净值、持仓和现金余额，并更新图表。一次填写尚未完成时，状态区可能提示补全输入；继续完成填写后会再次计算。自动计算会使用未保存的输入副本，完成后仍按通常习惯保存 Excel。
+## Download and first setup
 
-想获取新行情时，**自己点击 Update**。按钮会刷新资产价格和四组汇率，将历史数据按日期去重合并到本地缓存，然后重新计算并保存工作簿。没有定时下载，没有打开文件时的自动下载；旧版 E5/E6 的 Yes/No 开关不再控制行情请求。新界面在这两格说明“Manual Update”和“Automatic (local)”。
+1. Download the ZIP above. Alternatively, open the [release page](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/tag/v1.1.0-beta.3) and select `robo-advisor-local-excel-v1.1.0-beta.3.zip` under **Assets**. GitHub's green **Code > Download ZIP** downloads the current source instead of a numbered release; it also contains the setup files, but the release ZIP is easier to identify and share.
+2. Extract the **whole ZIP** into a folder you intend to keep. Do not run files inside the ZIP or copy only an Excel template out of the folder.
+3. Mac: double-click `1_Setup.command`. Windows: double-click `1_Setup.cmd`. Wait for **Setup completed**. Setup installs a private Python environment and dependencies, then creates `Portfolio.xlsm`. On Mac it also installs a small Excel-to-Python bridge for your account. **Setup does not download prices or FX rates.**
+4. Open the generated **`Portfolio.xlsm` in the main folder** and enable macros for this trusted workbook. Files under `examples/excel` are templates or previews.
+5. Enter starting amounts in the yellow **Initial cash** cells, `B19:B23`. USD 10,000 is a starting example; change it before recording your own portfolio. Use non-negative amounts, whole yen for JPY, and at most two decimal places for the other currencies. At least one amount must be positive.
+6. Click **Update** yourself to download initial market data. The first historical download may take a few minutes. Wait for the success message at the upper right, then save.
 
-交易需要用户输入，资产走势图由交易记录及已缓存的历史价格、汇率计算生成。修改旧交易会重新计算受影响的历史走势。数据只覆盖已下载的交易日；缺少价格、汇率或输入无效时，H1 状态区会显示 **RESULTS NOT CURRENT** 和原因，原有结果保留但不能当作本次输入的有效结果。用户可按提示修正输入，或自行决定点击 Update 补充数据。
+Before the first market download, **Update required** in Current cash and a missing-cache message are expected. Setup completion does not mean market data has been downloaded.
 
-## 如何填写 Dashboard
+If macOS blocks the setup file, check its source and use that file's **Open Anyway** option in System Settings > Privacy & Security. Do not disable Gatekeeper globally. If a `.command` file lacks execution permission, open Terminal in the extracted folder and run `chmod +x *.command`, then retry. If Windows flags a trusted download, review its file properties and your organization's policy. Do not disable antivirus or Excel's global macro protections. Managed computers may require administrator help.
 
-| 位置 | 内容 | 填写方式 |
+## Daily use: calculation versus Update
+
+| Action | What happens | Downloads market data? |
 | --- | --- | --- |
-| B4:B8 | USD、JPY、EUR、AUD、CNY 初始现金 | 非负；日元整数，其余币种最多两位小数；至少一项大于零 |
-| E3 | 估值日期 | 留空为缓存中最新 ETF 交易日；指定日期必须有美国市场收盘价 |
-| E4 | 年化无风险利率 | 如 `0.04` 或 `4%` |
-| A27:F226 | 用户的交易记录 | 按日期升序填写；同日按行顺序执行；最多 200 笔 |
-| E17 / E18 | 本地行情和汇率覆盖日期 | 用于判断数据新旧；点击 Update 后不一定存在今天的收盘价 |
-| H1:M2 | 当前计算状态 | 缺数据、输入问题和更新结果显示在这里 |
+| Run `1_Setup` | Install or repair the runtime; create a workbook if missing | No; software installation itself needs internet |
+| Open Excel or edit initial cash, dates or trades | Calculate holdings, cash, history, metrics and chart from the cache | No |
+| Click **Update** in Excel | Download prices and FX rates, calculate, and save | Yes, at your request |
+| Run external `2_Update` with Excel closed | Download prices and FX rates, then calculate | Yes, at your request |
+| Run external `3_Recalculate` with Excel closed | Calculate from the existing cache | No |
+| Move the date slider | Display historical metrics and move the chart marker | No |
 
-输入表六列分别是日期、操作、ETF、股数或金额、支付币种、换入币种。支持 19 只美国上市 ETF，名单在 `config/assets.json`。
+Finish editing a row and wait about two seconds. The status reports calculation, followed by success or a specific error. An incomplete row can briefly produce an error while you type; completing it triggers another calculation. Unsaved edits are included, but save Excel as usual to keep your work.
+
+**Update is always a user action.** Automatic calculation never silently fetches missing data. Correct the input or choose Update yourself. One Update can make multiple requests for the configured ETFs and currencies; it is not a single API call. There is no built-in API key or promise of unlimited requests.
+
+## Dashboard reference
+
+| Location | Meaning | How to use it |
+| --- | --- | --- |
+| `B4:B8` — **Current cash** | Remaining USD, JPY, EUR, AUD and CNY after trades through the valuation date | Automatic output; do not overwrite the formulas |
+| `B19:B23` — **Initial cash** | Cash before the first recorded trade | Yellow input cells; set before entering trades |
+| `E3` | Valuation date | Blank means latest cached ETF day; a chosen date needs available closing data |
+| `E4` | Annual risk-free rate | Enter `0.04` or `4%`, for example |
+| `A27:F226` | Trade entry | Up to 200 rows, oldest first; same-day rows execute top to bottom |
+| `E8:E15` | Selected date and portfolio metrics | Follow the date slider |
+| `E17:E18` | ETF and FX cache coverage | Check these dates rather than assuming today's closing prices are available |
+| `H1:M2` | Calculation status | Read this first if results seem unchanged |
+| `H26:M...` | ETF holdings | Positions at the valuation date |
+| `H49:L54` | Cash detail | Currency balances, FX observations and USD equivalents |
+| Row 230 onward | Calculated trade ledger | Execution prices, cash debits/credits and remaining shares |
+| Row 439 onward | Daily history | Portfolio values and performance used by the chart |
+
+The input columns are **Date, Action, ETF, Shares / amount, Cash currency, To currency**. Use actual Excel dates covered by the cached US ETF trading calendar. Weekends and holidays without a close are not accepted, including for exchanges in this simulation. The valuation date cannot precede any entered trade.
 
 | Date | Action | ETF | Shares / amount | Cash currency | To currency |
 | --- | --- | --- | ---: | --- | --- |
-| 2026-08-27 | Buy | SPY | 2 | USD | 留空 |
-| 2026-08-28 | Sell | SPY | 1 | USD | 留空 |
-| 2026-08-28 | Exchange | 留空 | 500 | USD | JPY |
+| 2026-10-20 | Buy | SPY | 1 | USD | |
+| 2026-10-21 | Sell | SPY | 1 | USD | |
+| 2026-10-22 | Exchange | | 1000 | USD | JPY |
 
-Buy/Sell 使用正整数股数，换入币种留空；Exchange 使用换出币种金额，ETF 留空，换入币种必须不同。不能产生负现金或超额卖出。交易日期必须是 Excel 日期和存在行情的美国交易日。
+For **Buy/Sell**, enter positive whole shares and a payment/receipt currency; leave To currency empty. For **Exchange**, leave ETF empty, enter the amount of source currency to convert, and choose a different destination currency. Negative cash, overselling and fractional shares are rejected. The 19 supported US-listed ETFs are listed in [config/assets.json](config/assets.json).
 
-## 结果和计算口径
+The [worked tutorial](docs/TUTORIAL.md) explains expected results, corrections, starting your own portfolio and restoring backups.
 
-同一张 Dashboard 显示持仓、各币种现金、模拟成交记录、逐日 USD 组合价值，以及收益率、Sharpe、最大和当前回撤。日期滑块改变历史指标及图中标记；持仓和余额表显示估值日结果。
+## Calculation conventions
 
-沿用上游的日收盘价模拟，未接券商，不会实际下单。ETF 使用 USD 收盘价，非美元现金使用当日或之前最近一期汇率，最多滞后五个自然日，不使用未来汇率。Sharpe 按 252 个交易日年化及 E4 利率计算；样本不足或波动为零时显示 n.a.。不含分红、手续费和买卖价差。资产历史价格不会凭空补齐，ETF 上市前也没有其收盘价。
+This is an end-of-day simulation. It does not connect to a broker or place orders. You enter transactions; the application computes history from those records and cached prices/FX. Editing an old transaction recalculates the affected history.
 
-行情来自 Yahoo Finance。一次 Update 会涉及多个资产和汇率请求；API 调用额度、网络与服务可用性仍由数据提供方决定。ETF 不纳入当前尚未完成的纽约交易日，汇率不纳入当前 UTC 日。
+ETFs execute at their USD close. Cash debits/credits use whole yen for JPY and two decimals for other currencies, with half-up rounding. FX uses the most recent observation on or before the relevant date, no more than five calendar days old. Future FX is not used. Dividends, fees and bid/ask spreads are excluded.
 
-## 备用入口与失败恢复
+Portfolio value includes ETFs and cash translated to USD. Return starts at the first displayed date. Sharpe uses daily USD returns, the entered risk-free rate and 252 trading days; insufficient observations or zero volatility produce `n.a.`. Maximum drawdown is the worst decline from an earlier peak. The slider changes historical metrics and the chart marker; Current cash and holdings remain valuation-date results.
 
-表内宏无法使用时，保存并关闭 `Portfolio.xlsm`，主动双击 `2_Update` 获取最新行情并计算。若只想按已有数据重算、不请求 API，可双击 `3_Recalculate`。外部程序要求关闭工作簿，以免覆盖正在编辑的内容。
+Market data comes from Yahoo Finance through `yfinance`. ETF downloads exclude the unfinished New York trading day; FX excludes the current UTC day. Provider limits, outages and historical coverage apply. The workbook cannot value an ETF before its available trading history.
 
-Python 先在临时文件计算，成功后才交给 Excel 接收结果。行情两部分全部下载成功后才更新本地缓存；API 下载中途失败会保留旧缓存。每次成功计算的输入副本保存在 `local_data/backups`，保留最近五份。计算失败不覆盖原交易文件；详情在 `local_data/last_update.log`。恢复时先关闭工作簿，再把选定的备份复制到根目录并命名为 `Portfolio.xlsm`，保留原文件作为另一个备份。
+## Errors, backups and recovery
 
-初始数据缺失时请自行点击 Update。`insufficient cash/shares` 表示余额或持仓不足；`no ETF close` 需要检查日期及行情范围；`FX rate is stale` 需要检查汇率覆盖。若未运行 Setup 或本地环境丢失，程序会提示运行 Setup，自动计算不会借机联网安装依赖。
+**RESULTS NOT CURRENT** means the displayed outputs do not reflect the present inputs. The last valid results remain visible, so a visible number does not prove that the new calculation succeeded. Read the reason, correct the input, or deliberately Update if more data is needed.
 
-Mac 若提示启动文件没有执行权限，可在终端输入 `chmod +x `（末尾有空格），把三个 `.command` 文件拖入后按回车。如系统限制打开，请按系统提示允许可信下载来源。只对这个工作簿启用宏，不需要调低 Excel 全局安全设置。受管理的公司电脑可能需要管理员允许本地程序。
+| Message or symptom | What to check |
+| --- | --- |
+| `Missing local ... Click Update` | Setup did not download market data. Choose Update when ready. |
+| `no ETF close` / `No ETF close` | Weekend/holiday, date outside cache, or ETF without a price on that day. |
+| `insufficient ... cash` | Source currency and cash available before this row. |
+| `insufficient ... shares` | Earlier purchases and quantity being sold. |
+| `FX rate is stale` | FX coverage; decide whether to Update. |
+| `Run 1_Setup once` | Run Setup for your operating system to repair the environment. |
+| Cash does not change | Complete the row, including Cash currency; check dates, wait, and read the status. |
+| Button does nothing | Enable macros for this file. Alternatively, save/close Excel and run `2_Update` or `3_Recalculate`. |
 
-## 文件、升级和开发
+Calculation uses temporary files and imports completed results. Downloads are staged before replacing market caches. Failed calculations do not replace the working workbook with partial results. Automatic input backups are in `local_data/backups` (latest five); diagnostics are in `local_data/last_update.log`. Backups are input snapshots, not a substitute for saved copies.
 
-`Portfolio.xlsm` 是个人工作文件，`local_data/market` 是独立行情缓存，`local_data/backups` 是输入备份。`.tools`、`.runtime`、`.venv` 为本地环境，均与个人数据一起排除在 Git 之外。工具没有上传交易的功能。
+To restore, close Excel, keep a copy of the current workbook, copy a chosen backup into the main tool folder, and name the restored copy `Portfolio.xlsm`. Reopen and verify its inputs. The tutorial includes the full procedure.
 
-从 1.0 升级：解压到新文件夹，将旧的 `Portfolio.xlsx` 及需要沿用的 `local_data/market` 复制过来，再运行新包的 Setup。程序把旧文件的内容迁移到 `Portfolio.xlsm`，并保留旧文件。已经存在的 `Portfolio.xlsm` 不会被 Setup 重置；因此不要拿旧测试版 xlsm 直接替代新模板，否则其中的宏也会保持旧版。移动整个工具文件夹后需重新 Setup 修复运行环境路径。
+## Sharing and upgrading
 
-本项目基于 [winstonFang05/cuhk-cdas-robo-advisor](https://github.com/winstonFang05/cuhk-cdas-robo-advisor)，上游提交 `53743116b40cc2638620acded8f4d44cfc725405`，说明保存在 `UPSTREAM.md`；上游未另外声明开源许可证。1.1 增加 Excel 按钮、工作簿事件、本地缓存计算和手动行情请求的分离。
+Share the **original release ZIP or download link**. Each person extracts and runs Setup once. A lone `Portfolio.xlsm` does not contain the Python functions. Do not share your working folder when you intend to exclude your own transactions, cache, backups and logs.
 
-开发测试可运行 `uv sync --extra test` 与 `uv run pytest -q`。宏源码保存在 `excel_button`，模板中的源码由测试独立提取核对。修改源码后运行 `python scripts/build_workbook.py`，它使用固定版本的 [ovba-writer](https://github.com/kay-ws/ovba-writer) 按 MS-OVBA 重建源码项目，由收件人的 Excel 编译；此步骤需要 Go，仅开发者需要。macOS/Windows CI 检查初始化和 Python 工作流，不代表两个系统的原生 Excel 界面都已验证。
+`Portfolio.xlsm`, `local_data/`, `.venv/`, `.runtime/` and `.tools/` are local-only and excluded from Git and release ZIPs. There is no portfolio-upload feature. Market requests send instrument requests to the data provider.
+
+For an older beta, extract the new release into a **new folder** and run Setup. Copy starting amounts into the new Initial cash cells and paste only the six trade-input columns, `A27:F226`, from the old workbook. Do not overwrite the new workbook with an old `.xlsm`, which also restores old macros. Optionally copy `local_data/market` into the new folder and run `3_Recalculate` with Excel closed to reuse data. Keep the old folder as a backup. Setup can import legacy `Portfolio.xlsx`; its old cash layout migrates on the first successful calculation. Rerunning Setup never resets an existing `Portfolio.xlsm`.
+
+After moving the whole folder, rerun Setup at the new location. See [the file reference](docs/FILES.md) for working files, templates, runtime files and developer tools.
+
+## Development and provenance
+
+Based on [winstonFang05/cuhk-cdas-robo-advisor](https://github.com/winstonFang05/cuhk-cdas-robo-advisor), upstream commit `53743116b40cc2638620acded8f4d44cfc725405`. [UPSTREAM.md](UPSTREAM.md) preserves the upstream reference and separate research workflow. Upstream did not declare a separate license; this distribution does not invent one.
+
+Developers can run `uv sync --extra test` and `uv run pytest -q`. VBA source is in `excel_button/`; tests extract and compare the embedded project with that source. After editing VBA or the fresh-workbook layout, run `python scripts/build_workbook.py`. This developer-only rebuild requires Go and pinned [ovba-writer](https://github.com/kay-ws/ovba-writer); ordinary users need neither. `scripts/package_release.py` packages tracked distribution files and rejects local/private data. CI covers setup and Python behavior on macOS and Windows. See [VALIDATION.md](VALIDATION.md) and [CHANGELOG.md](CHANGELOG.md).

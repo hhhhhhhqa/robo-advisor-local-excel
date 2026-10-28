@@ -38,7 +38,7 @@ def folder_lock(root: Path):
                 import fcntl
                 fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError as exc:
-            raise LocalError("这个文件夹正在更新，请等待另一个更新窗口完成。") from exc
+            raise LocalError("This folder is already updating. Wait for the other update to finish.") from exc
         try:
             yield
         finally:
@@ -57,13 +57,13 @@ def prepare(root: Path) -> Path:
     template = root / "examples" / "excel" / "robo_advisor_dashboard.xlsx"
     if not workbook.exists():
         if not template.is_file():
-            raise LocalError("找不到 Excel 模板。请解压整个下载包后重新运行。")
+            raise LocalError("Excel template not found. Extract the complete download package and try again.")
         try:
             with workbook.open("xb") as destination, template.open("rb") as source:
                 shutil.copyfileobj(source, destination)
         except FileExistsError:
             pass
-        print("已创建 Portfolio.xlsx（初始现金 10,000 USD，可自行修改）。")
+        print("Created Portfolio.xlsx with USD 10,000 starting cash. You can edit the starting amounts.")
     return workbook
 
 
@@ -73,7 +73,7 @@ def fingerprint(path: Path) -> str:
 
 def require_closed(workbook: Path) -> None:
     if workbook.with_name("~$" + workbook.name).exists():
-        raise LocalError(f"请先保存并关闭 {workbook.name}，再运行外部更新；表内按钮可直接使用。")
+        raise LocalError(f"Save and close {workbook.name} before running an external update. The in-workbook button works while Excel is open.")
 
 
 def calculate(root: Path, workbook: Path, output: Path, *, refresh: bool = False) -> list[dict]:
@@ -92,7 +92,7 @@ def calculate(root: Path, workbook: Path, output: Path, *, refresh: bool = False
         # This branch is reachable only from an explicit user Update action.
         import yfinance as yf
         yf.set_tz_cache_location(str(local / "yfinance"))
-        print("正在按你的要求更新资产价格和汇率……", flush=True)
+        print("Updating asset prices and FX rates at your request...", flush=True)
         with tempfile.TemporaryDirectory(prefix="market-", dir=local) as staging:
             staged_prices = Path(staging) / price_path.name
             staged_fx = Path(staging) / fx_path.name
@@ -111,7 +111,7 @@ def calculate(root: Path, workbook: Path, output: Path, *, refresh: bool = False
         if missing:
             raise LocalError("Missing local " + " and ".join(missing) +
                              ". Click Update to download market data. Automatic calculation never downloads data.")
-        print("只使用本地缓存计算；不会联网获取行情。", flush=True)
+        print("Calculating from the local cache only. No market data requests.", flush=True)
         prices = load_price_snapshot(price_path, False, list(config["assets"]),
                                      config["requested_start_date"])
         fx = load_fx_snapshot(fx_path, False, config["requested_start_date"])
@@ -156,12 +156,12 @@ def update(root: Path, *, refresh: bool = True) -> Path:
             staged = macro_staged
         require_closed(workbook)
         if fingerprint(workbook) != before:
-            raise LocalError("更新期间 Excel 内容发生变化，已取消写入。请保存关闭后重新更新。")
+            raise LocalError("The workbook changed during calculation. Writing was cancelled. Save and close it, then try again.")
         backup_input(root, workbook)
         os.replace(staged, workbook)
-    print(f"更新完成：估值日 {history[-1]['date']}，组合价值 USD {history[-1]['nav']:,.2f}。")
-    print(f"现在可以打开 {workbook.name} 查看结果和使用时间滑块。")
-    print("本次更新前的 Excel 已备份到 local_data/backups（保留最近 5 份）。")
+    print(f"Completed: valuation date {history[-1]['date']}, portfolio value USD {history[-1]['nav']:,.2f}.")
+    print(f"Open {workbook.name} to view the results and use the date slider.")
+    print("The previous inputs were saved to local_data/backups. The latest five automatic backups are retained.")
     return workbook
 
 
@@ -172,22 +172,22 @@ def calculate_for_excel(root: Path, snapshot: Path | None = None, output: Path |
     snapshot = snapshot or local / "button_input.xlsm"
     output = output or local / "button_result.xlsx"
     if snapshot.resolve() == output.resolve() or output.suffix != ".xlsx":
-        raise LocalError("按钮的输入副本和结果文件必须分开保存，结果格式必须是 .xlsx。")
+        raise LocalError("The input snapshot and output must be separate files. The output must use .xlsx format.")
     output.unlink(missing_ok=True)
     output.with_suffix(".error.txt").unlink(missing_ok=True)
     if not snapshot.is_file():
-        raise LocalError("请在 Portfolio.xlsm 中点击 Update results。")
+        raise LocalError("Input snapshot not found. Use the Update button in Portfolio.xlsm or edit a trade to calculate locally.")
     with tempfile.TemporaryDirectory(prefix="button-", dir=local) as staging:
         staged = Path(staging) / "result.xlsx"
         calculate(root, snapshot, staged, refresh=refresh)
         backup_input(root, snapshot)
         os.replace(staged, output)
-    print("计算完成，正在由 Excel 接收结果。")
+    print("Calculation completed. Excel is importing the results.")
     return output
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="初始化或更新本地 Excel 投资组合")
+    parser = argparse.ArgumentParser(description="Set up or update the local Excel portfolio")
     parser.add_argument("action", choices=("setup", "update", "recalculate", "excel-update", "excel-recalculate", "excel-button"))
     parser.add_argument("--snapshot", type=Path)
     parser.add_argument("--result", type=Path)
@@ -207,8 +207,8 @@ def main(argv: list[str] | None = None) -> int:
                 from workbook_button import prepare_button_workbook, install_mac_helper
                 prepare_button_workbook(root)
                 install_mac_helper(root)
-                print("初始化完成。请打开 Portfolio.xlsm，允许这个文件运行宏。")
-                print("请手动点击 Update 获取初始行情。以后只有手动 Update 才联网；交易修改后只使用缓存计算。")
+                print("Setup completed. Open Portfolio.xlsm and enable macros for this workbook.")
+                print("Click Update yourself to download the initial market data. Trade edits calculate from cached data only.")
             elif args.action.startswith("excel-"):
                 calculate_for_excel(root, args.snapshot, args.result,
                                     refresh=args.action in ("excel-update", "excel-button"))
@@ -222,9 +222,9 @@ def main(argv: list[str] | None = None) -> int:
                 args.result.with_suffix(".error.txt").write_text(str(exc), encoding="utf-8")
             except OSError:
                 logging.exception("Could not write the Excel error detail")
-        print(f"\n未完成：{exc}", file=sys.stderr)
-        print("未将本次计算结果写入 Excel。请修正问题后重试。", file=sys.stderr)
-        print("日期、资金和交易填写要求见 README；详细原因见 local_data/last_update.log。", file=sys.stderr)
+        print(f"\nNot completed: {exc}", file=sys.stderr)
+        print("The calculation did not replace your workbook results. Correct the issue and try again.", file=sys.stderr)
+        print("See README.md for input instructions and local_data/last_update.log for details.", file=sys.stderr)
         return 1
 
 

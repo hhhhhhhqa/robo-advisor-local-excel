@@ -1,5 +1,7 @@
 # CUHK CDAS Robo-Advisor
 
+> Preserved upstream reference. The commands, refresh switches and layout below describe the original research workflow. For this local Excel distribution, use [README.md](README.md) and [the tutorial](docs/TUTORIAL.md); only an explicit user Update downloads market data.
+
 This is a Final Year Project for the Computational Data Science at CUHK, focusing on the development of a robo-advisor for personalized portfolio construction and optimization.
 
 The project aims to construct investment portfolios that achieve lower volatility while maintaining competitive risk-adjusted returns relative to the market benchmark.

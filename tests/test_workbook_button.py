@@ -40,6 +40,31 @@ def test_embedded_macros_match_reviewable_source_and_use_workbook_events():
     assert "RunPortfolio True" in embedded["Module1.bas"]
 
 
+def test_fresh_template_uses_initial_cash_and_remains_stable_after_calculation(tmp_path):
+    from robo_advisor.excel_frontend import read_inputs
+    from robo_advisor.config import load_project_config
+    root = tmp_path / "fresh download"
+    legacy = local_folder(root)
+    legacy.unlink()  # This disposable fixture must exercise fresh setup, not import.
+    add_template(root)
+    workbook = prepare_button_workbook(root)
+    assets = load_project_config(root / "config/assets.json")["assets"]
+    inputs = read_inputs(workbook, assets, read_refresh_flags=False)
+    assert inputs.cash["USD"] == 10000
+    assert inputs.trades == []
+    sheet = load_workbook(workbook)["Dashboard"]
+    assert sheet["A3"].value == "Current cash"
+    assert '"Update required"' in sheet["B4"].value
+    assert sheet["B19"].value == 10000
+    for _ in range(2):
+        runner.update(root, refresh=False)
+        sheet = load_workbook(workbook)["Dashboard"]
+        assert sheet["B19"].value == 10000
+        assert sheet["B4"].value == "=I50"
+        assert sheet["I50"].value == 10000
+        assert sheet["I51"].value == 0
+
+
 def test_upgrade_preserves_existing_inputs_and_the_legacy_file(tmp_path):
     root = tmp_path / "person"
     legacy = local_folder(root)
@@ -109,7 +134,7 @@ def test_mac_style_temporary_paths_and_external_update_keep_macros(tmp_path, mon
     local_folder(root)
     add_template(root)
     workbook = prepare_button_workbook(root)
-    sandbox = tmp_path / "Excel temporary 空格's"
+    sandbox = tmp_path / "Excel temporary café's"
     sandbox.mkdir()
     snapshot = sandbox / "input.xlsm"
     output = sandbox / "result.xlsx"
@@ -127,7 +152,7 @@ def test_button_output_cannot_replace_its_input(tmp_path):
     root = tmp_path / "person"
     workbook = local_folder(root)
     before = workbook.read_bytes()
-    with pytest.raises(runner.LocalError, match="分开保存"):
+    with pytest.raises(runner.LocalError, match="separate files"):
         runner.calculate_for_excel(root, workbook, workbook)
     assert workbook.read_bytes() == before
 

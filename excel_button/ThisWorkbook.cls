@@ -14,7 +14,7 @@ Private Sub Workbook_SheetChange(ByVal Sh As Object, ByVal Target As Range)
         Module1.RefreshSelectedDate
         Exit Sub
     End If
-    If Application.Intersect(Target, Sh.Range("B4:B8,E3:E4,A27:F226")) Is Nothing Then Exit Sub
+    If Application.Intersect(Target, Sh.Range("B4:B8,B19:B23,E3:E4,A27:F226")) Is Nothing Then Exit Sub
     Module1.QueueCalculation
 End Sub
 
