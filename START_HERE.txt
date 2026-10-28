@@ -1,4 +1,4 @@
-Local Excel Portfolio Tracker — v1.1.0-beta.3
+Local Excel Portfolio Tracker — v1.1.0 Final Release
 
 1. Extract the COMPLETE ZIP into a local folder you intend to keep.
 2. Mac: double-click 1_Setup.command. Windows: double-click 1_Setup.cmd.

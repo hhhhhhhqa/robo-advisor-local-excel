@@ -4,9 +4,9 @@ An Excel portfolio dashboard that runs on your own computer. Download a copy, ru
 
 **Trade edits calculate automatically from local data. Only you decide when to download new asset prices and FX rates by clicking Update.** There are no scheduled market downloads or market requests on workbook open.
 
-**Current version: v1.1.0-beta.3.** Current cash balances are now at the top: Buy reduces cash, Sell adds cash, and Exchange reduces one currency and increases the other. Initial cash has its own editable section. Application messages and documentation are in English.
+**Final release: v1.1.0.** Current cash balances are now at the top: Buy reduces cash, Sell adds cash, and Exchange reduces one currency and increases the other. Initial cash has its own editable section. Application messages and documentation are in English.
 
-[Download the complete ZIP](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/download/v1.1.0-beta.3/robo-advisor-local-excel-v1.1.0-beta.3.zip) · [Release notes](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/tag/v1.1.0-beta.3) · [Worked tutorial](docs/TUTORIAL.md) · [Every file explained](docs/FILES.md)
+[Download the complete ZIP](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/download/v1.1.0/robo-advisor-local-excel-v1.1.0.zip) · [Release notes](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/tag/v1.1.0) · [Worked tutorial](docs/TUTORIAL.md) · [Every file explained](docs/FILES.md)
 
 ## Requirements
 
@@ -18,7 +18,7 @@ Native Excel behavior has been tested on Mac. Windows setup and Python workflows
 
 ## Download and first setup
 
-1. Download the ZIP above. Alternatively, open the [release page](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/tag/v1.1.0-beta.3) and select `robo-advisor-local-excel-v1.1.0-beta.3.zip` under **Assets**. GitHub's green **Code > Download ZIP** downloads the current source instead of a numbered release; it also contains the setup files, but the release ZIP is easier to identify and share.
+1. Download the ZIP above. Alternatively, open the [release page](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/tag/v1.1.0) and select `robo-advisor-local-excel-v1.1.0.zip` under **Assets**. GitHub's green **Code > Download ZIP** downloads the current source instead of a numbered release; it also contains the setup files, but the release ZIP is easier to identify and share.
 2. Extract the **whole ZIP** into a folder you intend to keep. Do not run files inside the ZIP or copy only an Excel template out of the folder.
 3. Mac: double-click `1_Setup.command`. Windows: double-click `1_Setup.cmd`. Wait for **Setup completed**. Setup installs a private Python environment and dependencies, then creates `Portfolio.xlsm`. On Mac it also installs a small Excel-to-Python bridge for your account. **Setup does not download prices or FX rates.**
 4. Open the generated **`Portfolio.xlsm` in the main folder** and enable macros for this trusted workbook. Files under `examples/excel` are templates or previews.
@@ -108,12 +108,12 @@ Share the **original release ZIP or download link**. Each person extracts and ru
 
 `Portfolio.xlsm`, `local_data/`, `.venv/`, `.runtime/` and `.tools/` are local-only and excluded from Git and release ZIPs. There is no portfolio-upload feature. Market requests send instrument requests to the data provider.
 
-For an older beta, extract the new release into a **new folder** and run Setup. Copy starting amounts into the new Initial cash cells and paste only the six trade-input columns, `A27:F226`, from the old workbook. Do not overwrite the new workbook with an old `.xlsm`, which also restores old macros. Optionally copy `local_data/market` into the new folder and run `3_Recalculate` with Excel closed to reuse data. Keep the old folder as a backup. Setup can import legacy `Portfolio.xlsx`; its old cash layout migrates on the first successful calculation. Rerunning Setup never resets an existing `Portfolio.xlsm`.
+To move an existing portfolio into this release, extract it into a **new folder** and run Setup. Copy starting amounts into the new Initial cash cells and paste only the six trade-input columns, `A27:F226`, from the old workbook. Do not overwrite the new workbook with an old `.xlsm`, which also restores old macros. Optionally copy `local_data/market` into the new folder and run `3_Recalculate` with Excel closed to reuse data. Keep the old folder as a backup. Setup can import legacy `Portfolio.xlsx`; its old cash layout migrates on the first successful calculation. Rerunning Setup never resets an existing `Portfolio.xlsm`.
 
 After moving the whole folder, rerun Setup at the new location. See [the file reference](docs/FILES.md) for working files, templates, runtime files and developer tools.
 
 ## Development and provenance
 
-Based on [winstonFang05/cuhk-cdas-robo-advisor](https://github.com/winstonFang05/cuhk-cdas-robo-advisor), upstream commit `53743116b40cc2638620acded8f4d44cfc725405`. [UPSTREAM.md](UPSTREAM.md) preserves the upstream reference and separate research workflow. Upstream did not declare a separate license; this distribution does not invent one.
+Based on [winstonFang05/cuhk-cdas-robo-advisor](https://github.com/winstonFang05/cuhk-cdas-robo-advisor), upstream commit `53743116b40cc2638620acded8f4d44cfc725405`. [ATTRIBUTION.md](ATTRIBUTION.md) records the source acknowledgement. This repository contains only the local Excel application and its supporting files. Upstream did not declare a separate license; this distribution does not invent one.
 
 Developers can run `uv sync --extra test` and `uv run pytest -q`. VBA source is in `excel_button/`; tests extract and compare the embedded project with that source. After editing VBA or the fresh-workbook layout, run `python scripts/build_workbook.py`. This developer-only rebuild requires Go and pinned [ovba-writer](https://github.com/kay-ws/ovba-writer); ordinary users need neither. `scripts/package_release.py` packages tracked distribution files and rejects local/private data. CI covers setup and Python behavior on macOS and Windows. See [VALIDATION.md](VALIDATION.md) and [CHANGELOG.md](CHANGELOG.md).

@@ -1,3 +1,3 @@
-"""Research data infrastructure for the Robo Advisor FYP."""
+"""Local Excel portfolio tracking and calculation."""
 
-__version__ = "0.1.0"
+__version__ = "1.1.0"

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robo-advisor-local-excel"
-version = "1.1.0b3"
+version = "1.1.0"
 description = "Local Excel portfolio with automatic offline calculations and manual market updates"
 requires-python = ">=3.12,<3.13"
 dependencies = [

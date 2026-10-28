@@ -1,12 +1,12 @@
-# Validation record — v1.1.0-beta.3
+# Validation record — v1.1.0
 
 Verified on October 28, 2026. All transactions below are fictional simulation inputs; no brokerage account or real order was involved. Published examples contain no personal portfolio data.
 
 ## Native Microsoft Excel on Mac
 
-The preceding beta.2 validation covered automatic cached calculation, a user-requested real Yahoo Finance refresh through the button's assigned macro, repeated result imports, invalid-input recovery, historical metrics and the chart marker. The repaired workbook does not retain links to temporary result files. Button/slider bindings were inspected and their target functions executed. Direct coordinate clicking and dragging were not counted as verified because the coordinate service failed; keyboard/paste and AppleScript were used where needed.
+Earlier native validation of the same Excel workflow covered automatic cached calculation, a user-requested real Yahoo Finance refresh through the button's assigned macro, repeated result imports, invalid-input recovery, historical metrics and the chart marker. The repaired workbook does not retain links to temporary result files. Button/slider bindings were inspected and their target functions executed. Direct coordinate clicking and dragging were not counted as verified because the coordinate service failed; keyboard/paste and AppleScript were used where needed.
 
-The beta.3 cash-display change was tested in the installed local workbook using native Excel and its actual automatic Python calculation path:
+The current cash display was tested in the installed local workbook using native Excel and its actual automatic Python calculation path:
 
 | Check | Observed result |
 | --- | --- |
@@ -25,8 +25,8 @@ Example prices and FX amounts refer to the observed cache through October 27, 20
 
 ## Automated and package checks
 
-All 38 Python tests passed locally. The suite covers trade/FX arithmetic, invalid inputs, missing/stale data, independent copies, local-only calculation, backups, locks, concurrent edits, download failures, temporary-file isolation, removal of external links, macro-source consistency and chart/control parts. Cash tests repeat calculation and edit the separate initial amount to guard against applying transactions twice. A fresh-template test checks the new layout before data exists, then recalculates it twice from cached fixture data.
+The Excel application tests cover trade/FX arithmetic, invalid inputs, missing/stale data, independent copies, local-only calculation, backups, locks, concurrent edits, download failures, temporary-file isolation, removal of external links, macro-source consistency and chart/control parts. Cash tests repeat calculation and edit the separate initial amount to guard against applying transactions twice. A fresh-template test checks the new layout before data exists, then recalculates it twice from cached fixture data.
 
-The release package is checked for personal-data exclusion, launcher permissions/line endings, setup without market downloads, repeat setup without resetting a workbook, missing-cache errors, and offline calculation using a separate fixture. Templates are scanned for non-English prompts and local user paths. The public macro template has no entered transactions or downloaded market data; the legacy demo is explicitly identified as a fictional upstream preview.
+The release package is checked for personal-data exclusion, launcher permissions/line endings, setup without market downloads, repeat setup without resetting a workbook, missing-cache errors, and offline calculation using a separate fixture. Templates are scanned for non-English prompts and local user paths. The public macro template has no entered transactions or downloaded market data.
 
 CI runs setup and Python tests on macOS and Windows. Native Windows Excel UI behavior has **not** been tested. Automated tests do not establish native Excel UI compatibility on an untested platform. See the repository's Actions page for the checks associated with the release commit.

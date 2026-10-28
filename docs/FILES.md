@@ -10,9 +10,9 @@ Ordinary users only need to run Setup once, open Portfolio.xlsm, enter inputs an
 | `README.md` | Main setup, usage, input and troubleshooting guide | Start here on GitHub |
 | `docs/TUTORIAL.md` | Worked buy, sell and currency-exchange exercise | Learn the workflow and expected results |
 | `docs/FILES.md` | This file reference | Identify an unfamiliar file |
-| `CHANGELOG.md` | Changes by release | Check what an update includes |
+| `CHANGELOG.md` | Final-release features | Read what this version includes |
 | `VALIDATION.md` | What was actually tested and remaining limits | Check platform and feature coverage |
-| `UPSTREAM.md` | Preserved upstream project reference | Research/development context; use README for this package |
+| `ATTRIBUTION.md` | Source acknowledgement | Original project credit and licensing context |
 | `1_Setup.command` | Mac one-time setup entry point | First use, or after moving/repairing the folder |
 | `1_Setup.cmd` | Windows one-time setup entry point | Same purpose on Windows |
 | `2_Update.command` | Mac external download and calculation entry point | A deliberate market refresh with Excel saved and closed |
@@ -28,9 +28,8 @@ The `.command` and `.cmd` files are alternatives for different operating systems
 | File | Purpose |
 | --- | --- |
 | `examples/excel/robo_advisor_dashboard_button.xlsm` | Fresh macro-enabled template copied by Setup. Includes the Update button, event-driven calculation and current/initial cash layout. No personal trades or cached market data. |
-| `examples/excel/robo_advisor_dashboard.xlsx` | Legacy macro-free template retained for import compatibility and the upstream command-line workflow. Its initial-cash layout differs from the current local template. |
-| `examples/excel/robo_advisor_dashboard_demo.xlsx` | Historical upstream preview with fictional transactions. It is not your working file, has no local Update-button integration, and does not provide current data. |
-| `config/assets.json` | The 19 supported ETF symbols, names, regions, factor mappings and history start date. Preserve the configured symbols unless you are adapting the code and understand the data requirements. |
+| `examples/excel/robo_advisor_dashboard.xlsx` | Compatibility template required by legacy workbook import and the Excel calculation tests. Its initial-cash layout differs from the working macro template; ordinary users do not open it. |
+| `config/assets.json` | The 19 supported ETF symbols, names and history start date. Preserve the configured symbols unless you are adapting the code and understand the data requirements. |
 | `pyproject.toml` | Application version, Python requirement and package dependencies. Used by Setup. |
 | `uv.lock` | Exact dependency resolution used for reproducible installation. |
 | `.python-version` | Requested Python version for the local environment. |
@@ -77,22 +76,12 @@ On Mac, Setup also installs `RoboAdvisorExcel_v2.applescript` under `~/Library/A
 | `src/robo_advisor/config.py` | Project paths and asset-configuration loading/validation. |
 | `src/robo_advisor/__init__.py` | Python package entry marker. |
 
-## Upstream research modules
-
-These are retained for the separate upstream research pipeline. Ordinary local Excel use does not require running that pipeline or downloading factor data.
+## Market-data helpers
 
 | File | Purpose |
 | --- | --- |
-| `scripts/build_data_pipeline.py` | Developer command to build the research dataset. |
-| `src/robo_advisor/pipeline.py` | Coordinate price/factor loading, return construction, alignment and research output. |
-| `src/robo_advisor/download_prices.py` | Research ETF-price download/normalization. |
-| `src/robo_advisor/download_factors.py` | Kenneth French factor-data download/processing. |
-| `src/robo_advisor/factors.py` | Factor transformations and research features. |
-| `src/robo_advisor/returns.py` | Daily and monthly return construction. |
-| `src/robo_advisor/alignment.py` | Align assets, factor dates and information availability. |
-| `src/robo_advisor/validation.py` | Validate the research dataset. |
-| `src/robo_advisor/utils.py` | Shared research/data utilities. |
-| `data/raw/ff3/.gitkeep`, `data/raw/metadata/.gitkeep`, `data/final/.gitkeep` | Empty directory placeholders. Generated research datasets are not distributed. |
+| `src/robo_advisor/download_prices.py` | Yahoo Finance ETF download and trading-date normalization used by the local market cache. |
+| `src/robo_advisor/utils.py` | Shared file-writing and data utilities required by the market-data helpers. |
 
 ## Development, release and tests
 
@@ -108,11 +97,5 @@ These are retained for the separate upstream research pipeline. Ordinary local E
 | `tests/test_local_runner.py` | Independent copies, offline calculation, cash-layout migration, locks, backups and safe failures. |
 | `tests/test_workbook_button.py` | Macro-source consistency, fresh template, legacy import, snapshot isolation and native workbook parts. |
 | `tests/test_excel_frontend.py` | ETF trades, FX, input rules, daily history and monitoring. |
-| `tests/test_prices.py` | Price-data handling. |
-| `tests/test_returns.py` | Return construction. |
-| `tests/test_factors.py` | Factor processing. |
-| `tests/test_alignment.py` | Date/information alignment. |
-| `tests/test_no_lookahead.py` | Prevent use of future information in research features. |
-| `tests/test_pipeline.py` | End-to-end research-pipeline behavior. |
 
-The release ZIP contains the program, templates, docs and tests, not a copy of the maintainer's installed environment or working portfolio. Older tags remain available for reproducibility; use the version linked in the main README for the current workflow.
+The release ZIP contains the program, templates, docs and tests, not a copy of the maintainer's installed environment or working portfolio. The repository publishes one final release: v1.1.0.

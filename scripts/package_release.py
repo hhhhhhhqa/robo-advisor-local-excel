@@ -20,7 +20,7 @@ TEXT_SUFFIXES = {'.py', '.md', '.txt', '.json', '.toml', '.lock', '.sh',
 
 def package(version: str, output: Path) -> Path:
     if not re.fullmatch(r'v\d+\.\d+\.\d+(?:-beta\.\d+)?', version):
-        raise ValueError('Use a release version such as v1.1.0-beta.3')
+        raise ValueError('Use a release version such as v1.1.0')
     files = subprocess.check_output(['git', 'ls-files', '--stage', '-z'], cwd=ROOT).decode().split('\0')
     stamp = int(subprocess.check_output(['git', 'show', '-s', '--format=%ct'], cwd=ROOT))
     date_time = datetime.fromtimestamp(stamp, timezone.utc).timetuple()[:6]

@@ -4,7 +4,7 @@ These fictional transactions record a local simulation. They do not place real o
 
 ## 1. Open your working workbook
 
-Download the [complete release ZIP](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/download/v1.1.0-beta.3/robo-advisor-local-excel-v1.1.0-beta.3.zip), extract it, and run `1_Setup.command` on Mac or `1_Setup.cmd` on Windows. Open the generated `Portfolio.xlsm` in the main folder and enable macros for this file.
+Download the [complete release ZIP](https://github.com/hhhhhhhqa/robo-advisor-local-excel/releases/download/v1.1.0/robo-advisor-local-excel-v1.1.0.zip), extract it, and run `1_Setup.command` on Mac or `1_Setup.cmd` on Windows. Open the generated `Portfolio.xlsm` in the main folder and enable macros for this file.
 
 There is one Dashboard sheet. Current cash at the upper left is automatic. Initial cash below it is the yellow input table. Update, the date slider and chart are on the right. Trade entry starts at row 27.
 
