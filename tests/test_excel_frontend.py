@@ -51,6 +51,12 @@ def test_trades_fx_history_and_monitoring(tmp_path: Path):
     sheet = result["Dashboard"]
     assert len(sheet._charts) == 1
     assert len(sheet._charts[0].series) == 2
+    assert sheet._charts[0].x_axis.axPos == "b"
+    assert sheet._charts[0].x_axis.tickLblPos == "low"
+    assert sheet._charts[0].y_axis.tickLblPos == "nextTo"
+    assert sheet._charts[0].x_axis.delete is False
+    assert sheet._charts[0].y_axis.delete is False
+    assert sheet._charts[0].series[0].smooth is False
     assert sheet["F8"].value == 4
     assert sheet["E8"].value == "=INDEX($A$440:$A$443,$F$8)"
     assert "INDEX" in sheet["E9"].value

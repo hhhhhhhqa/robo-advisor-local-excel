@@ -42,7 +42,7 @@ def build() -> None:
         for address, value in {
             "D5": "Market data", "E5": "Manual Update", "D6": "Calculations", "E6": "Automatic (local)",
             "H5": "Click Update to download prices and FX rates.",
-            "H6": "Click Update once to download initial market data.",
+            "H6": "", "H1": "Click Update once to download initial market data.",
             "A15": "Trade edits calculate automatically using local data.",
         }.items():
             xml = set_text(xml, address, value)

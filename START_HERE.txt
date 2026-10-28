@@ -1,4 +1,4 @@
-本地 Excel 投资组合工具 1.1 测试版
+本地 Excel 投资组合工具 1.1 beta.2 测试版
 
 完整解压 ZIP。Windows 使用 .cmd，Mac 使用 .command。
 
@@ -12,6 +12,6 @@
 
 每人下载原始包、各自 Setup，各自独立使用。请分发整个原始 ZIP。只有一个 Excel 文件无法调用配套的 Python 程序。移动工具文件夹后需要重新 Setup。
 
-测试状态：后台计算及数据隔离有自动测试，新宏已在 Mac Excel 中运行并创建按钮。Excel 内完整自动计算与结果导回流程、Windows 原生 Excel 界面仍需验证。外部入口可作为备用。
+测试状态：Mac Excel 已实测自动重算、手动行情更新、重复导回、错误保护与恢复、历史日期及图中标记；Windows 原生 Excel 界面未实测。后台有 36 项自动测试。具体范围见 VALIDATION.md。请使用新包中的新工作簿，旧 beta.1 工作簿不会由 Setup 自动替换宏。
 
 详细填写方法、升级和恢复说明见 README.md。备份在 local_data/backups，日志在 local_data/last_update.log。

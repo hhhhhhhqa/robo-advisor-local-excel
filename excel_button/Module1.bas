@@ -57,7 +57,7 @@ Public Sub QueueCalculation()
     If isRunning Then Exit Sub
     needsCalculation = True
     CancelPendingCalculation
-    ThisWorkbook.Worksheets("Dashboard").Range("H6").Value = "Inputs changed. Calculating from local data..."
+    ThisWorkbook.Worksheets("Dashboard").Range("H1").Value = "Inputs changed. Calculating from local data..."
     pendingTime = Now + TimeSerial(0, 0, 2)
     Application.OnTime pendingTime, QualifiedMacro("RecalculatePortfolio")
 End Sub
@@ -79,6 +79,14 @@ End Sub
 Public Sub UpdatePortfolio()
     CancelPendingCalculation
     If Not isRunning Then RunPortfolio True
+End Sub
+
+Public Sub RefreshSelectedDate()
+    Dim chart As ChartObject
+    ThisWorkbook.Worksheets("Dashboard").Calculate
+    For Each chart In ThisWorkbook.Worksheets("Dashboard").ChartObjects
+        chart.Chart.Refresh
+    Next chart
 End Sub
 
 Private Function ErrorDetail(ByVal errorPath As String) As String
@@ -103,6 +111,7 @@ Private Sub RunPortfolio(ByVal refreshMarket As Boolean)
     Dim exitCode As Long, oldEvents As Boolean, oldAlerts As Boolean, oldScreen As Boolean
     Dim failure As String, originalSelection As String, savedRow As Long, savedColumn As Long
     Dim oldRenamed As Boolean, imported As Boolean
+    Dim control As Shape, chart As ChartObject, lastRow As Long, links As Variant, link As Variant
     isRunning = True
     needsCalculation = False
     oldEvents = Application.EnableEvents
@@ -132,9 +141,9 @@ Private Sub RunPortfolio(ByVal refreshMarket As Boolean)
     Application.EnableEvents = False
     Application.ScreenUpdating = False
     If refreshMarket Then
-        oldSheet.Range("H6").Value = "Updating asset prices and FX rates..."
+        oldSheet.Range("H1").Value = "Updating asset prices and FX rates..."
     Else
-        oldSheet.Range("H6").Value = "Calculating from local data. No API requests."
+        oldSheet.Range("H1").Value = "Calculating from local data. No API requests."
     End If
     'SaveCopyAs includes unsaved edits without changing the open workbook's path.
     ThisWorkbook.SaveCopyAs inputPath
@@ -166,16 +175,46 @@ Private Sub RunPortfolio(ByVal refreshMarket As Boolean)
     oldRenamed = True
     newSheet.Name = "Dashboard"
     EnsureUpdateButton
-    With newSheet.Range("H6:M7")
+    lastRow = 439 + CLng(newSheet.Range("F8").Value)
+    'Excel can keep a copied chart/control linked to the temporary source book.
+    For Each chart In newSheet.ChartObjects
+        With chart.Chart
+            .SeriesCollection(1).Name = "Portfolio value USD"
+            .SeriesCollection(2).Name = "Selected value USD"
+            .SeriesCollection(1).Values = newSheet.Range("B440:B" & lastRow)
+            .SeriesCollection(1).XValues = newSheet.Range("A440:A" & lastRow)
+            .SeriesCollection(2).Values = newSheet.Range("I440:I" & lastRow)
+            .SeriesCollection(2).XValues = newSheet.Range("A440:A" & lastRow)
+        End With
+    Next chart
+    For Each control In newSheet.Shapes
+        If control.Type = msoFormControl Then
+            If control.FormControlType = xlScrollBar Then
+                control.ControlFormat.LinkedCell = "'Dashboard'!$F$8"
+                control.OnAction = QualifiedMacro("RefreshSelectedDate")
+            End If
+        End If
+    Next control
+    On Error Resume Next
+    ThisWorkbook.Names("MonitorDates").Delete
+    On Error GoTo Failed
+    ThisWorkbook.Names.Add Name:="MonitorDates", RefersTo:="='Dashboard'!$A$440:$A$" & lastRow
+    links = ThisWorkbook.LinkSources(xlExcelLinks)
+    If IsArray(links) Then
+        For Each link In links
+            If InStr(1, CStr(link), "result.xlsx", vbTextCompare) > 0 Then ThisWorkbook.BreakLink CStr(link), xlLinkTypeExcelLinks
+        Next link
+    End If
+    With newSheet.Range("H1:M2")
         .Merge
         .WrapText = True
         .Font.Size = 10
         .Font.Color = RGB(23, 50, 77)
     End With
     If refreshMarket Then
-        newSheet.Range("H6").Value = "Market data updated at " & Format(Now, "yyyy-mm-dd hh:nn")
+        newSheet.Range("H1").Value = "Market data updated at " & Format(Now, "yyyy-mm-dd hh:nn")
     Else
-        newSheet.Range("H6").Value = "Calculated from local data at " & Format(Now, "hh:nn:ss") & ". Click Update for new prices / FX."
+        newSheet.Range("H1").Value = "Calculated from local data at " & Format(Now, "hh:nn:ss") & ". Click Update for new prices / FX."
     End If
     newSheet.Calculate
     resultBook.Close SaveChanges:=False
@@ -198,13 +237,13 @@ Failed:
     If imported Then newSheet.Delete
     If oldRenamed Then oldSheet.Name = "Dashboard"
     If Not resultBook Is Nothing Then resultBook.Close SaveChanges:=False
-    With ThisWorkbook.Worksheets("Dashboard").Range("H6:M7")
+    With ThisWorkbook.Worksheets("Dashboard").Range("H1:M2")
         .Merge
         .WrapText = True
         .Font.Size = 10
         .Font.Color = RGB(156, 50, 30)
     End With
-    ThisWorkbook.Worksheets("Dashboard").Range("H6").Value = "RESULTS NOT CURRENT: " & Left$(failure, 350)
+    ThisWorkbook.Worksheets("Dashboard").Range("H1").Value = "RESULTS NOT CURRENT: " & Left$(failure, 350)
     If refreshMarket Then MsgBox failure & vbCrLf & "Your inputs remain in the workbook. See the status and local_data/last_update.log.", vbExclamation, "Update incomplete"
 CleanUp:
     On Error Resume Next

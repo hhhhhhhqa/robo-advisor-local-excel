@@ -130,3 +130,27 @@ def test_button_output_cannot_replace_its_input(tmp_path):
     with pytest.raises(runner.LocalError, match="分开保存"):
         runner.calculate_for_excel(root, workbook, workbook)
     assert workbook.read_bytes() == before
+
+
+def test_native_copy_external_link_is_not_carried_into_next_result(tmp_path):
+    from openpyxl.workbook.external_link.external import ExternalBook, ExternalLink, ExternalSheetNames
+    from openpyxl.packaging.relationship import Relationship
+    root = tmp_path / "person"
+    workbook = local_folder(root)
+    book = load_workbook(workbook)
+    link = ExternalLink(externalBook=ExternalBook(id="rId1", sheetNames=ExternalSheetNames(sheetName=["IncomingResult"])))
+    link.file_link = Relationship(Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLinkPath",
+                                  Target="file:///tmp/RoboAdvisor-Test/result.xlsx", TargetMode="External", Id="rId1")
+    book._external_links = [link]
+    book.save(workbook)
+    with ZipFile(workbook) as source:
+        assert any("externalLink" in n for n in source.namelist())
+    result = root / "local_data/result.xlsx"
+    runner.calculate_for_excel(root, workbook, result)
+    with ZipFile(result) as output:
+        assert not any("externalLink" in n for n in output.namelist())
+        assert b"externalReferences" not in output.read("xl/workbook.xml")
+    sheet = load_workbook(result)["Dashboard"]
+    assert sheet["B443"].value == 1010
+    assert "H1:M2" in {str(r) for r in sheet.merged_cells.ranges}
+    assert sheet["H6"].value is None

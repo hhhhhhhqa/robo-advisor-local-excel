@@ -87,7 +87,7 @@ def _yes_no(value: object, location: str) -> bool:
 
 
 def read_inputs(path: Path, assets: dict, *, read_refresh_flags: bool = True) -> Inputs:
-    book = load_workbook(path, read_only=True, data_only=True)
+    book = load_workbook(path, read_only=True, data_only=True, keep_links=False)
     if "Dashboard" not in book:
         raise ValueError("Expected one Dashboard sheet; use robo_advisor_dashboard.xlsx")
     settings = book["Dashboard"]
@@ -231,7 +231,9 @@ def _header(sheet, row: int, labels: list[str]) -> None:
 def write_results(input_path: Path, inputs: Inputs, market: MarketData,
                   ledger: list[dict], history: list[dict], cash: dict[str, Decimal],
                   holdings: dict[str, int], assets: dict, *, local_mode: bool = False) -> None:
-    book = load_workbook(input_path)
+    # Native worksheet copies can leave an unused link to a deleted result.xlsx.
+    # This self-contained dashboard has no external workbook data sources.
+    book = load_workbook(input_path, keep_links=False)
     sheet = book["Dashboard"]
     sheet.sheet_view.showGridLines = False
     sheet.sheet_properties.tabColor = "17324D"
@@ -286,7 +288,7 @@ def write_results(input_path: Path, inputs: Inputs, market: MarketData,
 
     chart = LineChart()
     chart.title = "Portfolio value (USD)"
-    chart.y_axis.title = "USD"
+    chart.title.overlay = False
     chart.x_axis.title = "Trading date"
     chart.style = 13
     chart.height = 6.5
@@ -294,6 +296,12 @@ def write_results(input_path: Path, inputs: Inputs, market: MarketData,
     chart.legend = None
     chart.x_axis = DateAxis(crossAx=100)
     chart.y_axis.crossAx = chart.x_axis.axId
+    chart.x_axis.axPos = "b"
+    chart.x_axis.tickLblPos = "low"
+    chart.y_axis.axPos = "l"
+    chart.y_axis.tickLblPos = "nextTo"
+    chart.x_axis.delete = False
+    chart.y_axis.delete = False
     span_days = (history[-1]["date"] - history[0]["date"]).days
     if span_days <= 90:
         chart.x_axis.number_format = "d-mmm"
@@ -314,6 +322,8 @@ def write_results(input_path: Path, inputs: Inputs, market: MarketData,
     chart.set_categories(Reference(sheet, min_col=1, min_row=440, max_row=len(history)+439))
     chart.series[0].graphicalProperties.line.solidFill = "17324D"
     chart.series[0].graphicalProperties.line.width = 25400
+    chart.series[0].smooth = False
+    chart.series[1].smooth = False
     chart.series[1].graphicalProperties.line.noFill = True
     chart.series[1].marker.symbol = "circle"
     chart.series[1].marker.size = 9
@@ -395,10 +405,13 @@ def write_results(input_path: Path, inputs: Inputs, market: MarketData,
         for validation in list(sheet.data_validations.dataValidation):
             if str(validation.sqref) in ("E5:E6", "E5", "E6"):
                 sheet.data_validations.dataValidation.remove(validation)
-        sheet.merge_cells("H6:M7")
-        sheet["H6"] = "Calculated from local market data. Click Update for new prices / FX."
-        sheet["H6"].alignment = Alignment(wrap_text=True, vertical="center")
-        sheet["H6"].font = Font(name="Arial", size=10, color="17324D")
+        if "H6:M7" in {str(r) for r in sheet.merged_cells.ranges}:
+            sheet.unmerge_cells("H6:M7")
+        sheet["H6"] = None
+        sheet.merge_cells("H1:M2")
+        sheet["H1"] = "Calculated from local market data. Click Update for new prices / FX."
+        sheet["H1"].alignment = Alignment(wrap_text=True, vertical="center")
+        sheet["H1"].font = Font(name="Arial", size=10, color="17324D")
     book.calculation = CalcProperties(calcMode="auto", fullCalcOnLoad=True, forceFullCalc=True)
     temp_path = input_path.with_name(input_path.stem + ".tmp.xlsx")
     book.save(temp_path)
